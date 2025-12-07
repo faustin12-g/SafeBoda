@@ -1,0 +1,113 @@
+@page "/login"
+@inject SafeBoda.Admin.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <div class="col-lg-6 login-left">
+        <div class="text-center position-relative" style="z-index: 1;">
+            <i class="bi bi-shield-check" style="font-size: 8rem; color: var(--safeboda-green);"></i>
+            <h2 class="text-white mt-4 fw-bold">SafeBoda Admin</h2>
+            <p class="text-white-50">Secure access to your admin portal</p>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 login-right">
+        <div class="login-form">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold" style="color: var(--safeboda-dark);">Welcome Back</h3>
+                <p class="text-muted">Sign in to continue to your dashboard</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger alert-safeboda mb-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>@errorMessage
+                </div>
+            }
+
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                
+                <div class="mb-4">
+                    <label class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-envelope text-muted"></i>
+                        </span>
+                        <InputText @bind-Value="loginModel.Email" class="form-control border-start-0" 
+                                   placeholder="admin@safeboda.com" />
+                    </div>
+                    <ValidationMessage For="@(() => loginModel.Email)" class="text-danger small mt-1" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-lock text-muted"></i>
+                        </span>
+                        <InputText @bind-Value="loginModel.Password" type="password" 
+                                   class="form-control border-start-0" placeholder="Enter your password" />
+                    </div>
+                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger small mt-1" />
+                </div>
+
+                <button type="submit" class="btn btn-safeboda w-100 py-3" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Signing in...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        <span>Sign In</span>
+                    }
+                </button>
+            </EditForm>
+
+            <div class="text-center mt-4">
+                <a href="/" class="text-decoration-none" style="color: var(--safeboda-green);">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string? errorMessage;
+    private bool isLoading = false;
+
+    private class LoginModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        var request = new SafeBoda.Admin.Models.LoginRequest
+        {
+            Email = loginModel.Email,
+            Password = loginModel.Password
+        };
+
+        var (success, message) = await AuthService.LoginAsync(request);
+
+        if (success)
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+        else
+        {
+            errorMessage = message;
+        }
+
+        isLoading = false;
+    }
+}

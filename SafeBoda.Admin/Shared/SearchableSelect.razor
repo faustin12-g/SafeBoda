@@ -1,0 +1,291 @@
+@typeparam TItem
+@inject IJSRuntime JSRuntime
+
+<div class="searchable-select" @ref="containerRef">
+    <label class="form-label">@Label @if (Required) { <span class="text-danger">*</span> }</label>
+    <div class="position-relative">
+        <input 
+            type="text" 
+            class="form-control searchable-input @(isOpen ? "active" : "")"
+            @bind="searchTerm"
+            @bind:event="oninput"
+            @onfocus="OpenDropdown"
+            @onkeydown="HandleKeyDown"
+            placeholder="@Placeholder"
+            autocomplete="off" />
+        
+        <i class="bi bi-chevron-down dropdown-icon @(isOpen ? "rotate" : "")"></i>
+        
+        @if (isOpen && FilteredItems.Any())
+        {
+            <div class="dropdown-list">
+                @foreach (var item in FilteredItems.Take(MaxDisplayItems))
+                {
+                    var index = FilteredItems.ToList().IndexOf(item);
+                    <div class="dropdown-item @(index == selectedIndex ? "highlighted" : "")"
+                         @onclick="() => SelectItem(item)"
+                         @onmouseenter="() => selectedIndex = index">
+                        <div class="item-content">
+                            <span class="item-primary">@GetDisplayText(item)</span>
+                            @if (!string.IsNullOrEmpty(GetSecondaryText(item)))
+                            {
+                                <span class="item-secondary">@GetSecondaryText(item)</span>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                @if (FilteredItems.Count() > MaxDisplayItems)
+                {
+                    <div class="dropdown-item disabled">
+                        <small class="text-muted">+ @(FilteredItems.Count() - MaxDisplayItems) more...</small>
+                    </div>
+                }
+            </div>
+        }
+        else if (isOpen && !FilteredItems.Any() && !string.IsNullOrEmpty(searchTerm))
+        {
+            <div class="dropdown-list">
+                <div class="dropdown-item disabled">
+                    <small class="text-muted">No results found</small>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .searchable-select {
+        margin-bottom: 1rem;
+    }
+
+    .searchable-input {
+        padding-right: 2.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .searchable-input:focus {
+        border-color: var(--safeboda-green);
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.15);
+    }
+
+    .searchable-input.active {
+        border-color: var(--safeboda-green);
+    }
+
+    .dropdown-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #6c757d;
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown-icon.rotate {
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    .dropdown-list {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-height: 280px;
+        overflow-y: auto;
+        z-index: 1000;
+        animation: slideDown 0.2s ease;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dropdown-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .dropdown-item:hover:not(.disabled) {
+        background-color: #f8f9fa;
+    }
+
+    .dropdown-item.highlighted {
+        background-color: rgba(76, 175, 80, 0.1);
+        border-left: 3px solid var(--safeboda-green);
+    }
+
+    .dropdown-item.disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
+
+    .item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .item-primary {
+        font-weight: 500;
+        color: #212529;
+        font-size: 0.95rem;
+    }
+
+    .item-secondary {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    /* Custom scrollbar */
+    .dropdown-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public string Placeholder { get; set; } = "Search...";
+    [Parameter] public List<TItem> Items { get; set; } = new();
+    [Parameter] public Func<TItem, string> GetDisplayText { get; set; } = item => item?.ToString() ?? "";
+    [Parameter] public Func<TItem, string> GetSecondaryText { get; set; } = item => "";
+    [Parameter] public Func<TItem, string> GetValue { get; set; } = item => item?.ToString() ?? "";
+    [Parameter] public EventCallback<string> OnSelect { get; set; }
+    [Parameter] public int MaxDisplayItems { get; set; } = 8;
+    [Parameter] public string InitialValue { get; set; } = "";
+
+    private string searchTerm = "";
+    private bool isOpen = false;
+    private int selectedIndex = -1;
+    private ElementReference containerRef;
+
+    private IEnumerable<TItem> FilteredItems
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return Items;
+
+            return Items.Where(item =>
+                GetDisplayText(item).Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                GetSecondaryText(item).Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(InitialValue))
+        {
+            var selectedItem = Items.FirstOrDefault(item => GetValue(item) == InitialValue);
+            if (selectedItem != null)
+            {
+                searchTerm = GetDisplayText(selectedItem);
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                document.addEventListener('click', function(e) {
+                    const searchableSelects = document.querySelectorAll('.searchable-select');
+                    searchableSelects.forEach(select => {
+                        if (!select.contains(e.target)) {
+                            const event = new CustomEvent('clickoutside');
+                            select.dispatchEvent(event);
+                        }
+                    });
+                });
+            ");
+        }
+    }
+
+    private void OpenDropdown()
+    {
+        isOpen = true;
+        selectedIndex = -1;
+    }
+
+    private void CloseDropdown()
+    {
+        isOpen = false;
+        selectedIndex = -1;
+    }
+
+    private async Task SelectItem(TItem item)
+    {
+        searchTerm = GetDisplayText(item);
+        var value = GetValue(item);
+        await OnSelect.InvokeAsync(value);
+        CloseDropdown();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!isOpen)
+        {
+            if (e.Key == "ArrowDown" || e.Key == "Enter")
+            {
+                OpenDropdown();
+                return;
+            }
+        }
+
+        var filteredList = FilteredItems.Take(MaxDisplayItems).ToList();
+        
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                selectedIndex = Math.Min(selectedIndex + 1, filteredList.Count - 1);
+                break;
+            case "ArrowUp":
+                selectedIndex = Math.Max(selectedIndex - 1, 0);
+                break;
+            case "Enter":
+                if (selectedIndex >= 0 && selectedIndex < filteredList.Count)
+                {
+                    await SelectItem(filteredList[selectedIndex]);
+                }
+                break;
+            case "Escape":
+                CloseDropdown();
+                break;
+        }
+    }
+}

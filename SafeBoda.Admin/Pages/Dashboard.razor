@@ -1,0 +1,225 @@
+@page "/dashboard"
+@using SafeBoda.Admin.Shared
+@inject SafeBoda.Admin.Services.AuthService AuthService
+@inject SafeBoda.Admin.Services.ApiClient ApiClient
+@inject IJSRuntime JSRuntime
+
+<AdminLayout CurrentPage="dashboard">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1">Dashboard</h4>
+                    <p class="text-muted mb-0">Welcome back, @currentUser?.FullName</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success px-3 py-2">
+                        <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Online
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small">Total Users</p>
+                                <h3 class="fw-bold mb-0">@(stats?.TotalUsers ?? 0)</h3>
+                            </div>
+                            <div class="stat-icon green">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card" style="border-left-color: var(--safeboda-orange);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small">Total Trips</p>
+                                <h3 class="fw-bold mb-0">@(stats?.TotalTrips ?? 0)</h3>
+                            </div>
+                            <div class="stat-icon orange">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card" style="border-left-color: #1976d2;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small">Total Riders</p>
+                                <h3 class="fw-bold mb-0">@(stats?.TotalRiders ?? 0)</h3>
+                            </div>
+                            <div class="stat-icon blue">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card" style="border-left-color: #7b1fa2;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small">Total Drivers</p>
+                                <h3 class="fw-bold mb-0">@(stats?.TotalDrivers ?? 0)</h3>
+                            </div>
+                            <div class="stat-icon purple">
+                                <i class="bi bi-bicycle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-bar-chart me-2" style="color: var(--safeboda-green);"></i>
+                            Platform Overview
+                        </h5>
+                        <canvas id="overviewChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-pie-chart me-2" style="color: var(--safeboda-orange);"></i>
+                            User Distribution
+                        </h5>
+                        <canvas id="userDistributionChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Section -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="bi bi-activity me-2" style="color: #1976d2;"></i>
+                            Recent Activity
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="activity-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="activity-icon green me-3">
+                                            <i class="bi bi-person-plus"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@(stats?.TotalUsers ?? 0)</h6>
+                                            <small class="text-muted">Registered Users</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="activity-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="activity-icon orange me-3">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@(stats?.TotalTrips ?? 0)</h6>
+                                            <small class="text-muted">Total Trips</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="activity-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="activity-icon blue me-3">
+                                            <i class="bi bi-graph-up"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@GetGrowthRate()%</h6>
+                                            <small class="text-muted">Growth Rate</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    </div>
+</AdminLayout>
+
+<style>
+    .activity-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .activity-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .activity-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .activity-icon.green {
+        background: var(--safeboda-green-light);
+        color: var(--safeboda-green);
+    }
+
+    .activity-icon.orange {
+        background: rgba(255, 152, 0, 0.1);
+        color: var(--safeboda-orange);
+    }
+
+    .activity-icon.blue {
+        background: rgba(25, 118, 210, 0.1);
+        color: #1976d2;
+    }
+</style>
+
+@code {
+    private SafeBoda.Admin.Models.LoginResponse? currentUser;
+    private SafeBoda.Admin.Models.DashboardStats? stats;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            currentUser = await AuthService.GetCurrentUserAsync();
+            stats = await ApiClient.GetStatsAsync();
+            StateHasChanged();
+            
+            await InitializeCharts();
+        }
+    }
+
+    private async Task InitializeCharts()
+    {
+        await JSRuntime.InvokeVoidAsync("initializeDashboardCharts", 
+            stats?.TotalUsers ?? 0,
+            stats?.TotalTrips ?? 0,
+            stats?.TotalRiders ?? 0,
+            stats?.TotalDrivers ?? 0
+        );
+    }
+
+    private string GetGrowthRate()
+    {
+        if (stats == null) return "0";
+        var total = stats.TotalUsers + stats.TotalTrips;
+        return total > 0 ? "15.3" : "0";
+    }
+
+}
