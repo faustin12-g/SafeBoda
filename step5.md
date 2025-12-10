@@ -35,8 +35,8 @@ Welcome to Step 5! In this module, we're building the **frontend** of our SafeBo
 - Secure API communication
 
 **The transformation:**
-- **Before**: Only API endpoints (no user interface) ❌
-- **After**: Beautiful admin portal with full UI ✅
+- **Before**: Only API endpoints (no user interface)
+- **After**: Beautiful admin portal with full UI
 
 **Why Blazor?**
 - Write C# instead of JavaScript
@@ -57,7 +57,7 @@ Welcome to Step 5! In this module, we're building the **frontend** of our SafeBo
 
 **Blazor solution:**
 - **Backend**: C# (ASP.NET Core)
-- **Frontend**: C# (Blazor) ✅
+- **Frontend**: C# (Blazor)
 - **Benefit**: One language for everything!
 
 ### What is Blazor?
@@ -65,9 +65,9 @@ Welcome to Step 5! In this module, we're building the **frontend** of our SafeBo
 **Blazor** is a web framework that lets you build interactive web UIs using **C# instead of JavaScript**.
 
 **Key features:**
-- ✅ Write C# code in the browser
-- ✅ Component-based architecture
-- ✅ Two hosting models:
+- Write C# code in the browser
+- Component-based architecture
+- Two hosting models:
   - **Blazor Server**: Runs on server, updates via SignalR
   - **Blazor WebAssembly**: Runs in browser, like JavaScript
 
@@ -108,9 +108,9 @@ Welcome to Step 5! In this module, we're building the **frontend** of our SafeBo
 | **Offline capable** | No | Yes (after initial load) |
 
 **We chose WebAssembly** because:
-- ✅ Works offline (after initial load)
-- ✅ Scales better (runs on client)
-- ✅ Better for admin portals (always connected anyway)
+- Works offline (after initial load)
+- Scales better (runs on client)
+- Better for admin portals (always connected anyway)
 
 ### Blazor WebAssembly Architecture
 
@@ -409,14 +409,14 @@ app.MapControllers();
 ```
 Browser: Request to API
 API: No CORS headers
-Browser: ❌ Blocks request
+Browser: Blocks request
 ```
 
 **With CORS:**
 ```
 Browser: Request to API
 API: Adds CORS headers
-Browser: ✅ Allows request
+Browser: Allows request
 ```
 
 ---
@@ -428,10 +428,10 @@ Browser: ✅ Allows request
 **Typed HttpClient** = A service class that wraps `HttpClient` with specific methods for your API.
 
 **Benefits:**
-- ✅ Type-safe API calls
-- ✅ Centralized API logic
-- ✅ Easy to test
-- ✅ Reusable across components
+- Type-safe API calls
+- Centralized API logic
+- Easy to test
+- Reusable across components
 
 ### Creating ApiClient Service
 
@@ -1470,11 +1470,11 @@ else
 The Trips page already fetches and displays trips (see Step 6).
 
 **Key points:**
-- ✅ Uses `ApiClient.GetTripsAsync()`
-- ✅ Shows loading spinner
-- ✅ Displays trips in table
-- ✅ Handles empty state
-- ✅ Refreshes on button click
+- Uses `ApiClient.GetTripsAsync()`
+- Shows loading spinner
+- Displays trips in table
+- Handles empty state
+- Refreshes on button click
 
 ### Enhancing the Display
 
@@ -1668,14 +1668,14 @@ AuthService.OnAuthStateChanged += () => StateHasChanged();
 
 In Step 5, we:
 
-1. ✅ Created Blazor WebAssembly project
-2. ✅ Configured CORS in API
-3. ✅ Created ApiClient service
-4. ✅ Implemented AuthService
-5. ✅ Built Login page
-6. ✅ Created Dashboard/Trips pages
-7. ✅ Fetched and displayed trips
-8. ✅ Implemented logout functionality
+1. Created Blazor WebAssembly project
+2. Configured CORS in API
+3. Created ApiClient service
+4. Implemented AuthService
+5. Built Login page
+6. Created Dashboard/Trips pages
+7. Fetched and displayed trips
+8. Implemented logout functionality
 
 **Key Concepts Learned:**
 - **Blazor WebAssembly**: C# in the browser
@@ -1689,8 +1689,8 @@ In Step 5, we:
 - **Component Lifecycle**: `OnAfterRenderAsync`
 
 **The Transformation:**
-- **Before**: Only API (no UI) ❌
-- **After**: Beautiful admin portal ✅
+- **Before**: Only API (no UI)
+- **After**: Beautiful admin portal
 
 **What We Built:**
 - Interactive web application
@@ -1752,7 +1752,7 @@ Congratulations! You've built a complete admin portal! 🎉
 - **Step 2**: Web API
 - **Step 3**: Database persistence
 - **Step 4**: Authentication & authorization
-- **Step 5**: Admin portal ✅
+- **Step 5**: Admin portal
 
 Your SafeBoda application is now **complete** with both backend API and frontend admin portal! Administrators can manage the platform through a beautiful, user-friendly interface.
 
